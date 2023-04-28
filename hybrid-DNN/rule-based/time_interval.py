@@ -7,7 +7,6 @@ import os
 import matplotlib.pyplot as plt
 import time
 
-
 # TODO: potentially add an online method for computing standard deviation
 
 THRESHOLD = 20
@@ -16,7 +15,7 @@ OUTPUT_FILENAME = 'periods.npy'
 CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 output_file = (os.path.join(CUR_PATH, OUTPUT_FILENAME))
 
-DEBUG = True
+DEBUG = False
 
 # TODO: STORE ONLY RANGE_MIN AND RANGE_MAX (not the periods, waste of memory)
 def store_periods(dataset):
@@ -47,7 +46,7 @@ def compute_range(k: int, periods: np.array):
     range_max = avg + k*sigma
     return range_min,range_max
 
-def check_dataset_time_intervals(dataset):
+def check_dataset_time_intervals(dataset: pd.DataFrame):
     id_periods = dict()
     id_periods = np.load(output_file, allow_pickle='TRUE').item()
     blacklisted_dataset = pd.DataFrame()
@@ -78,7 +77,7 @@ def check_dataset_time_intervals(dataset):
     print(whitelisted_dataset.size, blacklisted_dataset.size)
     return whitelisted_dataset, blacklisted_dataset
 
-def plot_periods(id: string, dataset: DataFrame):
+def plot_periods(id: str, dataset: pd.DataFrame):
     id_packets = dataset.loc[dataset['id'] == id]
     times_of_arrival = id_packets['time'].to_numpy()
     periods = np.diff(times_of_arrival)
