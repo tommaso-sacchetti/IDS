@@ -9,7 +9,6 @@ sys.path.append(DATA_PATH)
 
 colnames = ['time', 'can', 'id', 'dlc', 'payload']
 
-# CHIEDI SE ID EXTENDED
 
 
 #raw = pd.read_csv(DATA_PATH, names=colnames, header=None)

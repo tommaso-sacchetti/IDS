@@ -1,11 +1,11 @@
+import os
+import pickle
+import time
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
-import pickle
-from pathlib import Path
-import os
 import matplotlib.pyplot as plt
-import time
+from pathlib import Path
+from tqdm import tqdm
 
 # TODO: potentially add an online method for computing standard deviation
 
