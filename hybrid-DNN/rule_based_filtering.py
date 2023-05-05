@@ -9,10 +9,6 @@ from pathlib import Path
 from tqdm import tqdm
 
 CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-mod_path = Path(__file__).parent
-relative_path = '../../data/raw.csv'
-DATA_PATH = (mod_path / relative_path).resolve()
-colnames = ['time', 'can', 'id', 'dlc', 'payload']
 
 DEBUG = False
 
@@ -20,7 +16,7 @@ DEBUG = False
 ####               ID BLACKLIST FILTERING               ####
 ############################################################
 
-whitelist_filename = 'whitelist.txt'
+whitelist_filename = 'rules/whitelist.txt'
 whitelist_file = (os.path.join(CUR_PATH, whitelist_filename))
 
 def add_to_whitelist(whitelisted_dataset):
@@ -32,11 +28,12 @@ def add_to_whitelist(whitelisted_dataset):
             for line in f: old_whitelisted.append(line.strip())
             new_whitelisted = list(set(whitelisted_ids) - set(old_whitelisted))
             for id in (pbar := tqdm(new_whitelisted)):
-                pbar.set_description(f"Adding ID to whitelist: {id}")
+                pbar.set_description(f'Adding ID to whitelist: {id}')
                 f.write(id + '\n')
     else:
         with open(whitelist_file, 'w') as f:
-            for id in whitelisted_ids:
+            for id in (pbar := tqdm(whitelisted_ids)):
+                pbar.set_description(f'whitelisting IDs')
                 f.write(id + '\n')
 
 def filter_blacklisted_id(dataset):
@@ -65,13 +62,14 @@ def filter_blacklisted_id(dataset):
 
 THRESHOLD = 20
 K = 5
-periods_filename = 'periods.npy'
+periods_filename = 'rules/periods.npy'
 periods_file = (os.path.join(CUR_PATH, periods_filename))
 
-# TODO: STORE ONLY RANGE_MIN AND RANGE_MAX (not the periods, waste of memory)
+# TODO: STORE ONLY RANGE_MIN AND RANGE_MAX, dict might be good (not the periods, waste of memory)
 def store_periods(dataset):
     id_periods = dict()
-    for id in tqdm(dataset['id'].unique()):
+    for id in (pbar := tqdm(dataset['id'].unique())):
+        pbar.set_description("saving IDs periods")
         id_packets = dataset.loc[dataset['id'] == id]
         times_of_arrival = id_packets['time'].to_numpy()
         periods = np.diff(times_of_arrival)
@@ -162,6 +160,7 @@ def check_dlc(dataset):
     else: whitelisted_dataset = dataset
     return whitelisted_dataset, blacklisted_dataset
 
+
 ############################################################
 ####                RULE-BASED FILTERING                ####
 ############################################################
@@ -183,8 +182,12 @@ def filter(dataset):
 ############################################################
 
 if __name__ == '__main__':
-    dataset = pd.read_csv(DATA_PATH, names=colnames, header=None)
-    # initialize_rules(dataset)
-    a, b, c, d = filter(dataset)
-    print(len(a), len(b), len(c), len(d))
-    print(len(a) + len(b) + len(c) + len(d), len(dataset))
+    mod_path = Path(__file__).parent
+    relative_path = '../data/raw.csv'
+    data_path = (mod_path / relative_path).resolve()
+    colnames = ['time', 'can', 'id', 'dlc', 'payload']
+    dataset = pd.read_csv(data_path, names=colnames, header=None)
+    initialize_rules(dataset)
+    #a, b, c, d = filter(dataset)
+    #print(len(a), len(b), len(c), len(d))
+    #print(len(a) + len(b) + len(c) + len(d), len(dataset))
