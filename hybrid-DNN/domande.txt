@@ -1,0 +1,6 @@
+* intervalli di tempo (rule-based) e messaggi periodici, falsi positivi e come fare. In molti casi scarta molti pacchetti.
+* come funzionano i dataset
+* differenza di lunghezza nei bytes of importance e come calcolarlo
+* calcolare entropia e distanza di hamming in modo più ottimizzato (oppure è normale ci metta un secolo)
+* in quale modo si caricano i dati su numpy
+* rete convoluzionale pacchetti con pochi byte come rappresentarli
