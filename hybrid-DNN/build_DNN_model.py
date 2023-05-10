@@ -1,17 +1,17 @@
+import os
 import torch
+import random
+import rule_based_filtering as filter
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import os
-import random
 import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import warnings
-import logging
 
 print(torch.__version__)
 
+############################################################
+####               MODEL GENERAL SETTINGS               ####
+############################################################
 
 # Set random seed for reproducibility
 seed = 42
@@ -24,22 +24,18 @@ torch.manual_seed(seed)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Device used: {}".format(device))
 
-############################################################
-####               MODEL GENERAL SETTINGS               ####
-############################################################
-
+# model settings
 input_dim = 5
 output_dim = 1
-
 n = 40 # number of inputs
-batch_size = 256
-epochs = 200
+batch_size = 128
+epochs = 50
 early_stopping_patience = 5
 early_stopping_min_delta = 0
-lr = 0.0001
-dropout = 0.1
+lr = 0.001
 
-# Early stopping: credits to Massaro
+# Early stopping
+# credits to Massaro
 # TODO: check if possible the copy otherwise re-implement it
 
 class EarlyStopping():
@@ -73,32 +69,20 @@ class EarlyStopping():
                 print('INFO: Early stopping')
                 self.early_stop = True
 
-
 ############################################################
-####                 BUILDING THE MODEL                 ####
+####                   PRE-PROCESSING                   ####
 ############################################################
 
-class DNN(nn.Module):
-  def __init__(self, input_dim, output_dim):
-    super(DNN, self).__init__()
-    # 5 input features, binary output
-    self.fc1 = nn.Linear(input_dim, 100)
-    self.fc2 = nn.Linear(100, 100)
-    self.fc3 = nn.Linear(100, 80)
-    self.fc4 = nn.Linear(80, 60)
-    self.fc5 = nn.Linear(60, 40)
-    self.out = nn.Linear(40, 1)
+mod_path = Path(__file__).parent
+relative_path = '../data/raw.csv'
+data_path = (mod_path / relative_path).resolve()
+colnames = ['time', 'can', 'id', 'dlc', 'payload']
+dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
 
-  def forward(self, x):
-    x = F.relu(self.fc1(x))
-    x = F.relu(self.fc2(x))
-    x = F.relu(self.fc3(x))
-    x = F.relu(self.fc4(x))
-    x = F.relu(self.fc5(x))
-    x = F.sigmoid(self.out(x))
-    return x
+# initialize only if clean dataset with no attacks 
+# filter.initialize_rules(dataset)
 
-net = DNN(input_dim, output_dim)
-print(net)
+whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filter(dataset)
 
+# TRAINING THE MODEL
 

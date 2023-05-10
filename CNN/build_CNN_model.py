@@ -1,17 +1,39 @@
-import os
 import torch
-import random
-import rule_based_filtering as filter
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import os
+import random
 import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import warnings
+import logging
 
 print(torch.__version__)
 
-############################################################
-####               MODEL GENERAL SETTINGS               ####
-############################################################
+'''
+General:
+    dataset: 80% training, 20% testing
+    dropout of 0.1 before max pooling
+    200 epochs
+
+Binary classification:
+    Adam optimizer
+    lr 0.0001
+    binary_crossentropy
+    tanh input activation function
+    sigmoid output activation function
+    single convolutional layer with 512 filter
+
+Multiclass classification
+    Nadam optimizer
+    lr 0.0001
+    categorical_crossentropy
+    sigmoid input activation funtion
+    softmax output activation function
+    two convolutional layers with 512 filter
+'''
 
 # Set random seed for reproducibility
 seed = 42
@@ -24,18 +46,22 @@ torch.manual_seed(seed)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Device used: {}".format(device))
 
-# model settings
+############################################################
+####               MODEL GENERAL SETTINGS               ####
+############################################################
+
 input_dim = 5
 output_dim = 1
+
 n = 40 # number of inputs
-batch_size = 128
-epochs = 50
+batch_size = 256
+epochs = 200
 early_stopping_patience = 5
 early_stopping_min_delta = 0
-lr = 0.001
+lr = 0.0001
+dropout = 0.1
 
-# Early stopping
-# credits to Massaro
+# Early stopping: credits to Massaro
 # TODO: check if possible the copy otherwise re-implement it
 
 class EarlyStopping():
@@ -69,18 +95,4 @@ class EarlyStopping():
                 print('INFO: Early stopping')
                 self.early_stop = True
 
-############################################################
-####                   PRE-PROCESSING                   ####
-############################################################
-
-mod_path = Path(__file__).parent
-relative_path = '../data/raw.csv'
-data_path = (mod_path / relative_path).resolve()
-colnames = ['time', 'can', 'id', 'dlc', 'payload']
-dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
-
-# initialize only if clean dataset with no attacks 
-# filter.initialize_rules(dataset)
-
-whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filter(dataset)
 

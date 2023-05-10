@@ -95,6 +95,7 @@ def get_features(dataset: pd.DataFrame, b1: int, b2: int) -> np.array:
     entropy = _entropy(dataset)
     importance_bytes = _get_bytes(dataset, b1, b2)
     features = np.column_stack((ids, hamming, entropy, importance_bytes))
+    return features
 
 if __name__ == '__main__':
     mod_path = Path(__file__).parent
@@ -107,4 +108,4 @@ if __name__ == '__main__':
     #print(len(dataset), '-', len(_get_ids(dataset)), '=', len(dataset) - len(_get_ids(dataset)))
     #print(_get_hamming_distances(dataset))
     #print(entropy(dataset)[:10])
-    get_features(dataset, 0, 1)
+    print(get_features(dataset, 0, 1))

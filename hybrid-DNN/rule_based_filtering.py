@@ -19,7 +19,7 @@ DEBUG = False
 whitelist_filename = 'rules/whitelist.txt'
 whitelist_file = (os.path.join(CUR_PATH, whitelist_filename))
 
-def add_to_whitelist(whitelisted_dataset):
+def _add_to_whitelist(whitelisted_dataset: pd.DataFrame) -> None:
     whitelisted_ids = whitelisted_dataset['id'].unique()
     if(os.path.exists(whitelist_file) and os.stat(whitelist_file).st_size != 0):
         # ugly but it works
@@ -36,7 +36,7 @@ def add_to_whitelist(whitelisted_dataset):
                 pbar.set_description(f'whitelisting IDs')
                 f.write(id + '\n')
 
-def filter_blacklisted_id(dataset):
+def _filter_blacklisted_id(dataset: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     if(os.path.exists(whitelist_file) and os.stat(whitelist_file).st_size != 0) :
         with open(whitelist_file, 'r') as f:
             whitelisted = []
@@ -55,7 +55,6 @@ def filter_blacklisted_id(dataset):
         print("Error: no whitelist available. Returning full dataset")
         return dataset, pd.DataFrame()
 
-
 ############################################################
 ####                    TIME INTERVAL                   ####
 ############################################################
@@ -65,8 +64,8 @@ K = 5
 periods_filename = 'rules/periods.npy'
 periods_file = (os.path.join(CUR_PATH, periods_filename))
 
-# TODO: STORE ONLY RANGE_MIN AND RANGE_MAX, dict might be good (not the periods, waste of memory)
-def store_periods(dataset):
+def _store_periods(dataset: pd.DataFrame) -> dict:
+    # TODO: STORE ONLY RANGE_MIN AND RANGE_MAX, dict might be good (not the periods, waste of memory)
     id_periods = dict()
     for id in (pbar := tqdm(dataset['id'].unique())):
         pbar.set_description("saving IDs periods")
@@ -75,27 +74,27 @@ def store_periods(dataset):
         periods = np.diff(times_of_arrival)
         # inserd ID only if periodic
         if(periods.size != 0):
-            if check_periodicity(periods, THRESHOLD):
+            if _check_periodicity(periods, THRESHOLD):
                 id_periods[id] = periods
     # Save periods of periodic IDs in file            
     np.save(periods_file, id_periods)
     return id_periods
 
-def check_periodicity(periods: np.array, percentual_threshold: int):
+def _check_periodicity(periods: np.array, percentual_threshold: int) -> bool:
     avg = periods.mean()
     sigma = periods.std()
     coefficient = sigma / avg
     percentual_threshold = percentual_threshold / 100
     return coefficient < percentual_threshold
 
-def compute_range(k: int, periods: np.array):
+def _compute_range(k: int, periods: np.array) -> Tuple[float, float]:
     avg = periods.mean()
     sigma = periods.std()
     range_min = avg - k*sigma
     range_max = avg + k*sigma
     return range_min,range_max
 
-def check_dataset_time_intervals(dataset: pd.DataFrame):
+def _check_dataset_time_intervals(dataset: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     id_periods = dict()
     id_periods = np.load(periods_file, allow_pickle='TRUE').item()
     blacklisted_dataset = pd.DataFrame()
@@ -107,7 +106,7 @@ def check_dataset_time_intervals(dataset: pd.DataFrame):
             id_packets = dataset.loc[dataset['id'] == id]
             times_of_arrival = id_packets['time'].to_numpy()
             periods = np.diff(times_of_arrival)
-            range_min, range_max = compute_range(K, id_periods[id])  
+            range_min, range_max = _compute_range(K, id_periods[id])  
             df = dataset.loc[dataset['id'] == id]
             for index, period in enumerate(periods):
                 if period > range_max or period < range_min:
@@ -126,23 +125,22 @@ def check_dataset_time_intervals(dataset: pd.DataFrame):
     whitelisted_dataset = pd.merge(dataset,blacklisted_dataset, indicator=True, how='outer').query('_merge=="left_only"').drop('_merge', axis=1)
     return whitelisted_dataset, blacklisted_dataset
 
-# debug purpose
-def plot_periods(id: str, dataset: pd.DataFrame):
+def _plot_periods(id: str, dataset: pd.DataFrame) -> None:
+    # debug purpose method
     id_packets = dataset.loc[dataset['id'] == id]
     times_of_arrival = id_packets['time'].to_numpy()
     periods = np.diff(times_of_arrival) 
     plt.hist(periods, color='lightgreen', ec='black', bins=100)
-    r_min, r_max = compute_range(K, periods)
+    r_min, r_max = _compute_range(K, periods)
     plt.axvline(r_min, 0, 1, label='min')
     plt.axvline(r_max, 0, 1, label='max')
     plt.show()
-
 
 ############################################################
 ####                      DLC CHECK                     ####
 ############################################################
 
-def check_dlc(dataset):
+def _check_dlc(dataset: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     whitelisted_dataset = pd.DataFrame()
     blacklisted_dataset = pd.DataFrame()
     # using numpy array for faster computing time
@@ -160,22 +158,20 @@ def check_dlc(dataset):
     else: whitelisted_dataset = dataset
     return whitelisted_dataset, blacklisted_dataset
 
-
 ############################################################
 ####                RULE-BASED FILTERING                ####
 ############################################################
 
-def initialize_rules(dataset):
-    add_to_whitelist(dataset)
-    store_periods(dataset)
+def initialize_rules(dataset: pd.DataFrame) -> None:
+    _add_to_whitelist(dataset)
+    _store_periods(dataset)
 
-def filter(dataset):
-    id_whitelist, id_blacklist = filter_blacklisted_id(dataset)
-    period_whitelist, period_blacklist = check_dataset_time_intervals(id_whitelist)
-    dlc_whitelist, dlc_blacklist = check_dlc(period_whitelist)
+def filter(dataset: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    id_whitelist, id_blacklist = _filter_blacklisted_id(dataset)
+    period_whitelist, period_blacklist = _check_dataset_time_intervals(id_whitelist)
+    dlc_whitelist, dlc_blacklist = _check_dlc(period_whitelist)
 
     return dlc_whitelist, id_blacklist, period_blacklist, dlc_blacklist
-
 
 ############################################################
 ####                      TESTING                       ####

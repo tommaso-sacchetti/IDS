@@ -4,12 +4,20 @@ from pathlib import Path
 
 def get_features(dataset):
     ids = dataset['id'].to_numpy()
+    def func(x):
+        return int(x, base=16)
+    ids = np.vectorize(func)(ids)
     payloads = dataset['payload'].to_numpy()
-    payloads = np.array([_split(payload) for payload in payloads])
+    payloads = np.array([_split_and_fill(payload) for payload in payloads])
     features = np.column_stack((ids, payloads))
-    print(features)
+    #print(features)
+    return features
 
-def _split(s):
+def _split_and_fill(s):
+    '''
+        splits the payload in single bytes, converts them in integers.
+        adds padding of value -1 for every missing byte from the 8 possible
+    '''
     chunks, chunk_size = len(s), 8
     payload = [int(s[i:i+chunk_size], 2) for i in range(0, chunks, chunk_size)]
     while(len(payload) < 8):
@@ -24,4 +32,4 @@ if __name__ == '__main__':
     colnames = ['time', 'can', 'id', 'dlc', 'payload']
     dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
 
-    get_features(dataset)
+    features = get_features(dataset)
