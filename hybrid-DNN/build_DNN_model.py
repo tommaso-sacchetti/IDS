@@ -2,10 +2,9 @@ import os
 import torch
 import random
 import rule_based_filtering as filter
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 print(torch.__version__)
 
