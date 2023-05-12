@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 
 
-def get_features(dataset):
+def get_features(dataset: pd.DataFrame) -> pd.DataFrame:
     ids = dataset["id"].to_numpy()
 
     def func(x):
@@ -14,7 +14,7 @@ def get_features(dataset):
     payloads = np.array([_split_and_fill(payload) for payload in payloads])
     features = np.column_stack((ids, payloads))
     # print(features)
-    return features
+    return pd.DataFrame(features)
 
 
 def _split_and_fill(s):

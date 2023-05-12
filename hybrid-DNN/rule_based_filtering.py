@@ -10,6 +10,8 @@ CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
 
 DEBUG = False
 
+# TODO: find a way to blacklist already all the
+
 ############################################################
 ####               ID BLACKLIST FILTERING               ####
 ############################################################
@@ -195,6 +197,8 @@ def _check_dlc(dataset: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def initialize_rules(dataset: pd.DataFrame) -> None:
+    # remove all the attack flagged elements from dataframe to initialize clean rules
+    dataset = dataset.loc[dataset["flag"] == "T"]
     _add_to_whitelist(dataset)
     _store_periods(dataset)
 

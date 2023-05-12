@@ -13,6 +13,8 @@ import logging
 print(torch.__version__)
 
 """
+NETWORK INFO
+
 General:
     dataset: 80% training, 20% testing
     dropout of 0.1 before max pooling

@@ -1,12 +1,20 @@
 import os
 import torch
 import random
+import dataset_loader
+import pre_processing
 import rule_based_filtering as filter
 import numpy as np
 import pandas as pd
 from pathlib import Path
 
 print(torch.__version__)
+
+'''
+NETWORK INFO
+
+
+'''
 
 ############################################################
 ####               MODEL GENERAL SETTINGS               ####
@@ -15,7 +23,7 @@ print(torch.__version__)
 # Set random seed for reproducibility
 seed = 42
 random.seed(seed)
-os.environ['PYTHONHASHSEED'] = str(seed)
+os.environ["PYTHONHASHSEED"] = str(seed)
 np.random.seed(seed)
 torch.manual_seed(seed)
 
@@ -26,7 +34,7 @@ print("Device used: {}".format(device))
 # model settings
 input_dim = 5
 output_dim = 1
-n = 40 # number of inputs
+n = 40  # number of inputs
 batch_size = 128
 epochs = 50
 early_stopping_patience = 5
@@ -37,11 +45,13 @@ lr = 0.001
 # credits to Massaro
 # TODO: check if possible the copy otherwise re-implement it
 
-class EarlyStopping():
+
+class EarlyStopping:
     """
     Early stopping to stop the training when the loss does not improve after
     certain epochs.
     """
+
     def __init__(self, patience=5, min_delta=0):
         """
         :param patience: how many epochs to wait before stopping when loss is
@@ -54,6 +64,7 @@ class EarlyStopping():
         self.counter = 0
         self.best_loss = None
         self.early_stop = False
+
     def __call__(self, val_loss):
         if self.best_loss == None:
             self.best_loss = val_loss
@@ -65,23 +76,31 @@ class EarlyStopping():
             self.counter += 1
             print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
             if self.counter >= self.patience:
-                print('INFO: Early stopping')
+                print("INFO: Early stopping")
                 self.early_stop = True
+
 
 ############################################################
 ####                   PRE-PROCESSING                   ####
 ############################################################
 
-mod_path = Path(__file__).parent
-relative_path = '../data/raw.csv'
-data_path = (mod_path / relative_path).resolve()
-colnames = ['time', 'can', 'id', 'dlc', 'payload']
-dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
+dataset = dataset_loader.get_dataset()
 
-# initialize only if clean dataset with no attacks 
+# initialize only if clean dataset with no attacks
 # filter.initialize_rules(dataset)
 
-whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filter(dataset)
+whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filter(dataset)  # noqa: E501
+
+b1 = 0
+b2 = 1
+features = pre_processing.get_features(whitelisted_dataset,b1, b2)
+
+data_loader = dataset_loader.get_data_loader(features, batch_size)
+
 
 # TRAINING THE MODEL
+
+
+
+
 

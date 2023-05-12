@@ -12,6 +12,16 @@ hamming_filename = "pre-process/hamming.npy"
 hamming_file = os.path.join(CUR_PATH, hamming_filename)
 
 
+def get_features(dataset: pd.DataFrame, b1: int, b2: int) -> pd.DataFrame:
+    # TODO: see if hamming or entropy are stored and get it from them
+    ids = _get_ids(dataset)
+    hamming = _get_hamming_distances(dataset)
+    entropy = _entropy(dataset)
+    importance_bytes = _get_bytes(dataset, b1, b2)
+    features = np.column_stack((ids, hamming, entropy, importance_bytes))
+    return pd.DataFrame(features)
+
+
 def _get_ids(dataset: pd.DataFrame) -> np.array:
     return dataset["id"].to_numpy()
 
@@ -97,16 +107,6 @@ def _get_bytes(dataset: pd.DataFrame, b1: int, b2: int) -> np.array:
         ]
     )
     return importance_bytes
-
-
-def get_features(dataset: pd.DataFrame, b1: int, b2: int) -> np.array:
-    # TODO: see if hamming or entropy are stored and get it from them
-    ids = _get_ids(dataset)
-    hamming = _get_hamming_distances(dataset)
-    entropy = _entropy(dataset)
-    importance_bytes = _get_bytes(dataset, b1, b2)
-    features = np.column_stack((ids, hamming, entropy, importance_bytes))
-    return features
 
 
 if __name__ == "__main__":
