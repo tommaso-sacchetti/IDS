@@ -5,8 +5,6 @@ import dataset_loader
 import pre_processing
 import rule_based_filtering as filter
 import numpy as np
-import pandas as pd
-from pathlib import Path
 
 print(torch.__version__)
 
@@ -66,7 +64,7 @@ class EarlyStopping:
         self.early_stop = False
 
     def __call__(self, val_loss):
-        if self.best_loss == None:
+        if self.best_loss is None:
             self.best_loss = val_loss
         elif self.best_loss - val_loss > self.min_delta:
             self.best_loss = val_loss
@@ -87,6 +85,8 @@ class EarlyStopping:
 dataset = dataset_loader.get_dataset()
 
 # initialize only if clean dataset with no attacks
+# TODO: initialize rules always on, check and save rules for IDs only if already saved
+#       or if the flag indicates a malicious attack
 # filter.initialize_rules(dataset)
 
 whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filter(dataset)  # noqa: E501
