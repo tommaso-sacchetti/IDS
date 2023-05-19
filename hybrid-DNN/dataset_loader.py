@@ -1,12 +1,14 @@
 import torch
-import numpy as np
+import pre_processing
 import pandas as pd
 from pathlib import Path
 from torch.utils.data import Dataset, DataLoader
 
 mod_path = Path(__file__).parent
-relative_path = "../data/raw.csv"
-data_path = (mod_path / relative_path).resolve()
+raw_relative_path = "../data/raw.csv"
+attack_relative_path = "../data/CONTINOUS_CHANGE__MASQUERADE__v14.csv"
+raw_data_path = (mod_path / raw_relative_path).resolve()
+attack_data_path = (mod_path / attack_relative_path).resolve()
 
 
 def get_data_loader(dataset: pd.DataFrame, batch_size: int) -> DataLoader:
@@ -16,42 +18,23 @@ def get_data_loader(dataset: pd.DataFrame, batch_size: int) -> DataLoader:
 
 
 def get_dataset() -> pd.DataFrame:
-    dataset = _load_dataset_raw()
-    dataset = _add_clean_flag_column(dataset)  # replace with real method for flags
-    # dataset = _add_flag_column(dataset)
-    return dataset
-
-
-def _load_dataset_raw() -> pd.DataFrame:
-    colnames = ["time", "can", "id", "dlc", "payload"]
-    dataset = pd.read_csv(data_path, names=colnames, header=None)
-    return dataset
-
-
-def _add_clean_flag_column(dataset: pd.DataFrame) -> pd.DataFrame:
-    flags = np.empty(len(dataset), dtype=str)
-    flags[:] = "T"
-    dataset["flag"] = flags.tolist()
+    colnames = ["order", "time", "can", "id", "dlc", "payload", "flag"]
+    dataset = pd.read_csv(attack_data_path, header=0)
+    dataset.columns = colnames
     return dataset
 
 
 class CANDataset(Dataset):
     # flag: T: injected message, R: normal message
-    def __init__(self, dataset : pd.DataFrame):
-        x = dataset.iloc[:, 0:-1].values
+    def __init__(self, dataset: pd.DataFrame):
+        x = dataset.iloc[:, 0:-1]
         y = dataset.iloc[:, -1]
-        y.replace({"T": 1, "R": 0}, inplace=True)
-        y = y.values
-
-        # if dataset is in a 2d numpy array
-        #x = dataset[:, 0:-1]
-        #y = dataset[:, -1]
-        #y = y.char.replace(y, "T", "1")
-        #y = y.char.replace(y, "R", "0")
-        #y = y.astype(int)
+        x = x.to_numpy()
+        y = y.to_numpy()
 
         self.x_train = torch.tensor(x, dtype=torch.float32)
-        self.y_train = torch.tensor(y, dtype=torch.int32)
+        # unsqueeze(1) to change the shape in [batch_size, 1] (for training)
+        self.y_train = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
 
     def __len__(self):
         return len(self.y_train)
@@ -61,7 +44,10 @@ class CANDataset(Dataset):
 
 
 if __name__ == "__main__":
-    loader = get_data_loader(batch_size=10)
+    dataset = get_dataset()
+    dataset = dataset[:10000]
+    dataset = pre_processing.get_features(dataset, 0, 1)
+    loader = get_data_loader(dataset, batch_size=10)
     # test
     for i, (data, labels) in enumerate(loader):
         print(data.shape, labels.shape)
