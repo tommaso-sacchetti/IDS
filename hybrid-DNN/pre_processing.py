@@ -4,11 +4,13 @@ import math
 import dataset_loader as loader
 import pandas as pd
 import numpy as np
+import dataset_loader
 from pathlib import Path
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 
 def get_features(
     dataset: pd.DataFrame, b1: int, b2: int, dataset_name: str
@@ -20,7 +22,17 @@ def get_features(
     importance_bytes = _get_bytes(dataset, b1, b2)
     flags = dataset["flag"].to_numpy()
     features = np.column_stack((ids, hamming, entropy, importance_bytes, flags))
-    return pd.DataFrame(features)
+    features_name = [
+        "id",
+        "hamming",
+        "entropy",
+        "byte" + str(b1) + " (int)",
+        "byte" + str(b2) + " (int)",
+        "flags",
+    ]
+    features = pd.DataFrame(features)
+    features.columns = features_name
+    return features
 
 
 def _get_ids(dataset: pd.DataFrame) -> np.array:
@@ -59,9 +71,8 @@ def _get_hamming_distances(dataset: pd.DataFrame, dataset_name: str) -> np.array
         print(
             f"Total excecution time for hamming distances: {round(execution_time, 3)}s"
         )
-        np.save(hamming_file, hamming_distances)
     else:
-        hamming_distances = np.load(hamming_file, allow_pickle="TRUE").item()
+        hamming_distances = np.load(hamming_file, allow_pickle="TRUE").tolist()
     return hamming_distances
 
 
@@ -86,7 +97,7 @@ def _entropy(dataset: pd.DataFrame, dataset_name: str) -> np.array:
                 distribution[int(byte, 2)] += 1
         distribution = distribution / np.sum(distribution)
         plt.hist(distribution, color="lightgreen", ec="black", bins=500)
-        plt.set_title("byte value distribution histogram")
+        plt.title("byte value distribution histogram")
         plt.show()
         # calculation of entropy
         entropy = np.empty(0, int)
@@ -101,7 +112,7 @@ def _entropy(dataset: pd.DataFrame, dataset_name: str) -> np.array:
             entropy = np.append(entropy, sum)
         np.save(entropy_file, entropy)
     else:
-        entropy = np.load(entropy_file, allow_pickle="TRUE").item()
+        entropy = np.load(entropy_file, allow_pickle="TRUE").tolist()
     return entropy
 
 
@@ -134,16 +145,16 @@ def _get_bytes(dataset: pd.DataFrame, b1: int, b2: int) -> np.array:
 
 
 if __name__ == "__main__":
-    mod_path = Path(__file__).parent
-    relative_path = "../data/raw.csv"
-    data_path = (mod_path / relative_path).resolve()
-    colnames = ["time", "can", "id", "dlc", "payload"]
-    dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
-    x = get_features(dataset, 0, 1)
+    dataset_name = "CONTINOUS_CHANGE__MASQUERADE__v14.csv"
+    dataset = dataset_loader.get_dataset(
+        dataset_name="CONTINOUS_CHANGE__MASQUERADE__v14.csv"
+    )
+    dataset = dataset[:1000]
+    x = get_features(dataset, 0, 1, dataset_name)
     can = loader.CANDataset(x)
     # index = dataset.index[-1]
     # dataset = dataset.drop(range(100, index))
     # print(len(dataset), '-', len(_get_ids(dataset)), '=', len(dataset) - len(_get_ids(dataset)))
     # print(_get_hamming_distances(dataset))
     # print(entropy(dataset)[:10])
-    print(get_features(dataset, 0, 1))
+    print(get_features(dataset, 0, 1, dataset_name))
