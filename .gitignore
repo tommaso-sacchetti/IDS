@@ -1,5 +1,10 @@
 data/
-hybrid-DNN/rule-based/periods.npy
-hybrid-DNN/rule-based/whitelist.txt
 env/
 .vscode/
+personal/
+hybrid-DNN/rule-based/periods.npy
+hybrid-DNN/rule-based/whitelist.txt
+hybrid-DNN/rules
+hybrid-DNN/pre-process
+hybrid-DNN/__pycache__
+hybrid-DNN/model

@@ -18,6 +18,10 @@ def get_data_loader(dataset: pd.DataFrame, batch_size: int) -> DataLoader:
 
 
 def get_dataset() -> pd.DataFrame:
+    # TODO: put the dataset file name in a place easy to change 
+    """
+    Get the dataset according to the dataset name stored in this file
+    """
     colnames = ["order", "time", "can", "id", "dlc", "payload", "flag"]
     dataset = pd.read_csv(attack_data_path, header=0)
     dataset.columns = colnames

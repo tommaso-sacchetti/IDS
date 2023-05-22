@@ -5,17 +5,28 @@ import dataset_loader as loader
 import pandas as pd
 import numpy as np
 import dataset_loader
-from pathlib import Path
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-
+# TODO: fix the name, find a way to make it available to every file
 def get_features(
-    dataset: pd.DataFrame, b1: int, b2: int, dataset_name: str
+    dataset: pd.DataFrame, b1: int, b2: int, dataset_name = 'CONTINOUS_CHANGE__MASQUERADE__v14'
 ) -> pd.DataFrame:
     # TODO: see if hamming or entropy are stored and get it from them
+    '''
+        Extracts the relevant features from the raw dataset
+        Arguments:
+            dataset: a CAN dataset (DataFrame)
+            b1: integer representing first important byte to consider
+            b2: integer representing second important byte to consider
+            dataset_name: str, name of dataset, for file naming purpose only
+
+        Returns:
+            DataFrame containing the features with the following columns:
+                ID | HAMMING | ENTROPY | B1(int) | B2(int) | FLAG 
+    '''
     ids = _get_ids(dataset)
     hamming = _get_hamming_distances(dataset, dataset_name)
     entropy = _entropy(dataset, dataset_name)
