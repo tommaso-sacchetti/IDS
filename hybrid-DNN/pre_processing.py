@@ -5,14 +5,14 @@ import dataset_loader as loader
 import pandas as pd
 import numpy as np
 import dataset_loader
+import global_variables as glob
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 # TODO: fix the name, find a way to make it available to every file
 def get_features(
-    dataset: pd.DataFrame, b1: int, b2: int, dataset_name = 'CONTINOUS_CHANGE__MASQUERADE__v14'
+    dataset: pd.DataFrame, b1: int, b2: int, dataset_name = glob.dataset_name
 ) -> pd.DataFrame:
     # TODO: see if hamming or entropy are stored and get it from them
     '''
@@ -57,12 +57,9 @@ def _get_ids(dataset: pd.DataFrame) -> np.array:
 
 
 def _get_hamming_distances(dataset: pd.DataFrame, dataset_name: str) -> np.array:
-    hamming_filename = "pre-process/hamming_"
-    hamming_filename = hamming_filename + dataset_name + ".npy"
-    hamming_file = os.path.join(CUR_PATH, hamming_filename)
 
     # TODO: try a faster way to compute hamming distances
-    if not os.path.exists(hamming_file):
+    if not os.path.exists(glob.hamming_file):
         ids = _get_ids(dataset)
         payloads = dataset["payload"].to_numpy()
         id_payload = list(zip(ids, payloads))
@@ -83,7 +80,7 @@ def _get_hamming_distances(dataset: pd.DataFrame, dataset_name: str) -> np.array
             f"Total excecution time for hamming distances: {round(execution_time, 3)}s"
         )
     else:
-        hamming_distances = np.load(hamming_file, allow_pickle="TRUE").tolist()
+        hamming_distances = np.load(glob.hamming_file, allow_pickle="TRUE").tolist()
     return hamming_distances
 
 
@@ -94,10 +91,7 @@ def _hamming(s1: str, s2: str) -> int:
 
 def _entropy(dataset: pd.DataFrame, dataset_name: str) -> np.array:
     # TODO: check if entropy is correct
-    entropy_filename = "pre-process/entropy_"
-    entropy_filename = entropy_filename + dataset_name + ".npy"
-    entropy_file = os.path.join(CUR_PATH, entropy_filename)
-    if not os.path.exists(entropy_file):
+    if not os.path.exists(glob.entropy_file):
         distribution = np.zeros(2**8)
         # calculation of the distribution
         payloads = dataset["payload"].to_numpy()
@@ -121,9 +115,9 @@ def _entropy(dataset: pd.DataFrame, dataset_name: str) -> np.array:
                 pk = distribution[integer]
                 sum += pk * math.log(pk)
             entropy = np.append(entropy, sum)
-        np.save(entropy_file, entropy)
+        np.save(glob.entropy_file, entropy)
     else:
-        entropy = np.load(entropy_file, allow_pickle="TRUE").tolist()
+        entropy = np.load(glob.entropy_file, allow_pickle="TRUE").tolist()
     return entropy
 
 
@@ -156,16 +150,10 @@ def _get_bytes(dataset: pd.DataFrame, b1: int, b2: int) -> np.array:
 
 
 if __name__ == "__main__":
-    dataset_name = "CONTINOUS_CHANGE__MASQUERADE__v14.csv"
     dataset = dataset_loader.get_dataset(
-        dataset_name="CONTINOUS_CHANGE__MASQUERADE__v14.csv"
+        dataset_name=glob.dataset_name+".csv"
     )
     dataset = dataset[:1000]
-    x = get_features(dataset, 0, 1, dataset_name)
+    x = get_features(dataset, 0, 1)
     can = loader.CANDataset(x)
-    # index = dataset.index[-1]
-    # dataset = dataset.drop(range(100, index))
-    # print(len(dataset), '-', len(_get_ids(dataset)), '=', len(dataset) - len(_get_ids(dataset)))
-    # print(_get_hamming_distances(dataset))
-    # print(entropy(dataset)[:10])
-    print(get_features(dataset, 0, 1, dataset_name))
+    print(get_features(dataset, 0, 1))

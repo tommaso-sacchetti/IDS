@@ -1,1 +1,2 @@
-try CNN both with max and avg pooling
+* try CNN both with max and avg pooling
+* splittare direttamente il dataset o usare test e validation?

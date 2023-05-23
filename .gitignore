@@ -8,3 +8,4 @@ hybrid-DNN/rules
 hybrid-DNN/pre-process
 hybrid-DNN/__pycache__
 hybrid-DNN/model
+hybrid-DNN/evaluation

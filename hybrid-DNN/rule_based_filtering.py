@@ -3,13 +3,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import dataset_loader
-from pathlib import Path
+import global_variables as glob
 from tqdm import tqdm
 from typing import Tuple
 
-CUR_PATH = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
-DEBUG = False
 
 ############################################################
 ####                RULE-BASED FILTERING                ####
@@ -26,8 +23,8 @@ def initialize_rules(dataset: pd.DataFrame) -> None:
     Arguments:
         dataset: the dataset from which to store the rules
 
-    Returns: 
-        None 
+    Returns:
+        None
     """
     dataset = dataset.loc[dataset["flag"] == 0]
     _add_to_whitelist(dataset)
@@ -42,7 +39,7 @@ def filter(
 
     Arguments:
         dataset: the dataset to filter
-    
+
     Returns
         whitelist: the dataframe with all the whitelisted messages
         id_blacklist: the dataframe with messages blacklisted for their ID
@@ -60,18 +57,18 @@ def filter(
 ####               ID BLACKLIST FILTERING               ####
 ############################################################
 
-whitelist_filename = "rules/whitelist.txt"
-whitelist_file = os.path.join(CUR_PATH, whitelist_filename)
-
 
 def _add_to_whitelist(whitelisted_dataset: pd.DataFrame) -> None:
     """
     Adds to whitelist every ID contained in the dataset inserted in input
     """
     whitelisted_ids = whitelisted_dataset["id"].unique()
-    if os.path.exists(whitelist_file) and os.stat(whitelist_file).st_size != 0:
+    if (
+        os.path.exists(glob.whitelist_file)
+        and os.stat(glob.whitelist_file).st_size != 0
+    ):
         # ugly but it works
-        with open(whitelist_file, "r+") as f:
+        with open(glob.whitelist_file, "r+") as f:
             old_whitelisted = []
             for line in f:
                 old_whitelisted.append(line.strip())
@@ -81,7 +78,7 @@ def _add_to_whitelist(whitelisted_dataset: pd.DataFrame) -> None:
                     pbar.set_description(f"Adding ID to whitelist: {id}")
                     f.write(str(id) + "\n")
     else:
-        with open(whitelist_file, "w") as f:
+        with open(glob.whitelist_file, "w") as f:
             for id in (pbar := tqdm(whitelisted_ids)):
                 pbar.set_description("whitelisting IDs")
                 f.write(str(id) + "\n")
@@ -96,8 +93,11 @@ def _filter_blacklisted_id(dataset: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         (whitelist, blacklist): tuple of DataFrames, whitelisted and blacklisted
 
     """
-    if os.path.exists(whitelist_file) and os.stat(whitelist_file).st_size != 0:
-        with open(whitelist_file, "r") as f:
+    if (
+        os.path.exists(glob.whitelist_file)
+        and os.stat(glob.whitelist_file).st_size != 0
+    ):
+        with open(glob.whitelist_file, "r") as f:
             whitelisted = []
             for line in (pbar := tqdm(f.readlines())):
                 pbar.set_description("filtering blacklisted IDs")
@@ -105,7 +105,7 @@ def _filter_blacklisted_id(dataset: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         blacklisted_dataset = dataset.loc[-dataset["id"].isin(whitelisted)]
         whitelisted_dataset = dataset.loc[dataset["id"].isin(whitelisted)]
         # debug prints
-        if DEBUG:
+        if glob.DEBUG:
             print(
                 f"Dataset shape: {dataset.shape}; whitelisted_dataset shape: {whitelisted_dataset.shape}; blacklisted_dataset shape: {blacklisted_dataset.size}"  # noqa: E501
             )
@@ -125,8 +125,6 @@ def _filter_blacklisted_id(dataset: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
 
 THRESHOLD = 20
 K = 5
-periods_filename = "rules/periods.npy"
-periods_file = os.path.join(CUR_PATH, periods_filename)
 
 
 def _store_periods(dataset: pd.DataFrame) -> dict:
@@ -137,16 +135,19 @@ def _store_periods(dataset: pd.DataFrame) -> dict:
 
     The stored data structure consists in a dictionary, where for every ID
     there is a corresponding numpy array containing all the differences
-    between a line and the other hence all the periods from message to message 
+    between a line and the other hence all the periods from message to message
     of the same ID
 
-    Returns: 
+    Returns:
         id_periods: dict containing the periods for every periodic ID
     """
 
+    # To store all periods and dinamically update it, it might be better 
+    # to initialize only once with a dataset containing all the messages of a 
+    # given id
     id_periods = dict()
-    if os.path.exists(periods_file):
-        id_periods = np.load(periods_file, allow_pickle="TRUE").item()
+    if os.path.exists(glob.periods_file):
+        id_periods = np.load(glob.periods_file, allow_pickle="TRUE").item()
     for id in (pbar := tqdm(dataset["id"].unique())):
         # TODO: update the periods if changed instead of ignoring
         # currently saved id periods
@@ -159,8 +160,9 @@ def _store_periods(dataset: pd.DataFrame) -> dict:
             if periods.size != 0:
                 if _check_periodicity(periods, THRESHOLD):
                     id_periods[id] = periods
+
     # Save periods of periodic IDs in file
-    np.save(periods_file, id_periods)
+    np.save(glob.periods_file, id_periods)
     return id_periods
 
 
@@ -171,9 +173,9 @@ def _check_periodicity(periods: np.array, percentual_threshold: int) -> bool:
 
     Arguments:
         periods: a numpy array containing all the periods between messages
-        percentual_threshold: the coefficient threshold under which 
+        percentual_threshold: the coefficient threshold under which
             the message is considered periodic
-    
+
     Returns:
         boolean: true if periodic, false otherwise
     """
@@ -186,13 +188,13 @@ def _check_periodicity(periods: np.array, percentual_threshold: int) -> bool:
 
 def _compute_range(k: int, periods: np.array) -> Tuple[float, float]:
     """
-    Computes the range for a np.array to consider an element of the same "family" 
+    Computes the range for a np.array to consider an element of the same "family"
     (same ID in this case) periodic.
 
-    Arguments: 
+    Arguments:
         k: hyperparameter indicating the tolerance of the range
         periods: numpy array containing the periods
-    
+
     Returns:
         range_min: integer, minumun value to be periodic
         range_max: integer, maximum value to be periodic
@@ -218,9 +220,9 @@ def _check_dataset_time_intervals(
         blacklisted: DataFrame with the blacklist
 
     """
-    if os.path.exists(periods_file) and os.stat(periods_file).st_size != 0:
+    if os.path.exists(glob.periods_file) and os.stat(glob.periods_file).st_size != 0:
         id_periods = dict()
-        id_periods = np.load(periods_file, allow_pickle="TRUE").item()
+        id_periods = np.load(glob.periods_file, allow_pickle="TRUE").item()
         blacklisted_dataset = pd.DataFrame()
         whitelisted_dataset = pd.DataFrame()
         for id in (pbar := tqdm(dataset["id"].unique())):
@@ -236,7 +238,7 @@ def _check_dataset_time_intervals(
                     if period > range_max or period < range_min:
                         # since first row with id of df is not considered in the deltas
                         # (no way to compute it) it's ignored and the +1 is added
-                        if DEBUG:
+                        if glob.DEBUG:
                             print(
                                 f"ID: {id}, MIN: {range_min}, MAX: {range_max}, PERIOD {period}"  # noqa: E501
                             )
@@ -244,14 +246,14 @@ def _check_dataset_time_intervals(
                         blacklisted_dataset = pd.concat([blacklisted_dataset, row])
             else:
                 # id is not periodic, no way to check it's correct periodicity
-                if DEBUG:
+                if glob.DEBUG:
                     print(id, " is not periodic")
                 continue
     else:
         print("Error: no periods file available. Returning full dataset")
         return dataset, pd.DataFrame()
 
-    if DEBUG:
+    if glob.DEBUG:
         print("\n DATASET: ", blacklisted_dataset, "\n\n")
         print(whitelisted_dataset.size, blacklisted_dataset.size)
 
@@ -287,7 +289,7 @@ def _plot_periods(id: str, dataset: pd.DataFrame) -> None:
 def _check_dlc(dataset: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Check the correcteness of the DLC of the messages.
-    If the DLC doesn't match the actual number of bytes of the payload 
+    If the DLC doesn't match the actual number of bytes of the payload
     then the message goes in the blacklist
     """
 
@@ -324,6 +326,4 @@ if __name__ == "__main__":
     dataset = dataset_loader.get_dataset()
     initialize_rules(dataset)
     print(filter(dataset))
-    # a, b, c, d = filter(dataset)
-    # print(len(a), len(b), len(c), len(d))
-    # print(len(a) + len(b) + len(c) + len(d), len(dataset))
+

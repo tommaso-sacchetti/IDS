@@ -6,6 +6,7 @@ import pre_processing
 import traceback
 import DNN_model
 import torch.nn as nn
+import global_variables as glob
 import rule_based_filtering as filter
 import numpy as np
 import torch.optim as optim
@@ -129,26 +130,30 @@ whitelisted_dataset, id_blacklist, period_blacklist, dlc_blacklist = filter.filt
 )  # noqa: E501
 
 # TODO: IMPORTANCE BYTES, FIND THE RIGHT ONES
-b1 = 0
-b2 = 1
+b1 = glob.b1
+b2 = glob.b2
 
 # Split train, validation and test
-train_size = 0.7
+train_size = 0.8
 val_size = 0.2
-test_size = 0.1
+#test_size = 0.1
 features = pre_processing.get_features(whitelisted_dataset, b1, b2)
 train, val = train_test_split(features, test_size=val_size)
-train, test = train_test_split(train, test_size=test_size / (train_size + test_size))
+#train, test = train_test_split(train, test_size=test_size / (train_size + test_size))
 print(f"Training dataset length: {len(train)}")
 print(f"Validation dataset length: {len(val)}")
-print(f"Test dataset length: {len(test)}")
+#print(f"Test dataset length: {len(test)}")
 
 train_loader = dataset_loader.get_data_loader(train, batch_size=batch_size)
 val_loader = dataset_loader.get_data_loader(val, batch_size=batch_size)
-test_loader = dataset_loader.get_data_loader(test, batch_size=1)
+#test_loader = dataset_loader.get_data_loader(test, batch_size=1)
+
+
 
 ############################################################
+############################################################
 ####               BUILD AND TRAIN MODEL                ####
+############################################################
 ############################################################
 
 model = DNN_model.DNN(input_dim)
@@ -187,3 +192,4 @@ try:
 
 except Exception as e:
     traceback.print_exc()
+    print(e)

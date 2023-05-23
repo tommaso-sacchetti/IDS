@@ -1,14 +1,8 @@
 import torch
 import pre_processing
 import pandas as pd
-from pathlib import Path
+import global_variables as glob
 from torch.utils.data import Dataset, DataLoader
-
-mod_path = Path(__file__).parent
-raw_relative_path = "../data/raw.csv"
-attack_relative_path = "../data/CONTINOUS_CHANGE__MASQUERADE__v14.csv"
-raw_data_path = (mod_path / raw_relative_path).resolve()
-attack_data_path = (mod_path / attack_relative_path).resolve()
 
 
 def get_data_loader(dataset: pd.DataFrame, batch_size: int) -> DataLoader:
@@ -23,7 +17,18 @@ def get_dataset() -> pd.DataFrame:
     Get the dataset according to the dataset name stored in this file
     """
     colnames = ["order", "time", "can", "id", "dlc", "payload", "flag"]
-    dataset = pd.read_csv(attack_data_path, header=0)
+    dataset = pd.read_csv(glob.attack_data_path, header=0)
+    dataset.columns = colnames
+    return dataset
+
+
+def get_test_dataset() -> pd.DataFrame:
+    # TODO: put the dataset file name in a place easy to change 
+    """
+    Get the test dataset according to the dataset name stored in this file
+    """
+    colnames = ["order", "time", "can", "id", "dlc", "payload", "flag"]
+    dataset = pd.read_csv(glob.test_data_path, header=0)
     dataset.columns = colnames
     return dataset
 
