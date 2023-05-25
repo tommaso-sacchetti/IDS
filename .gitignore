@@ -9,3 +9,5 @@ hybrid-DNN/pre-process
 hybrid-DNN/__pycache__
 hybrid-DNN/model
 hybrid-DNN/evaluation
+CNN/__pycache__
+CNN/model

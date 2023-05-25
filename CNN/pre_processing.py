@@ -1,9 +1,15 @@
+import dataset_loader
 import pandas as pd
 import numpy as np
-from pathlib import Path
-
 
 def get_features(dataset: pd.DataFrame) -> pd.DataFrame:
+    """
+    Get the features for the dataset
+    Features consist in:
+        IDs as integers,
+        payload as arrays of bytes converted to integer (-1 where byte not present)
+        flags: 0 normal message, 1 malicious
+    """
     ids = dataset["id"].to_numpy()
 
     def func(x):
@@ -12,7 +18,8 @@ def get_features(dataset: pd.DataFrame) -> pd.DataFrame:
     ids = np.vectorize(func)(ids)
     payloads = dataset["payload"].to_numpy()
     payloads = np.array([_split_and_fill(payload) for payload in payloads])
-    features = np.column_stack((ids, payloads))
+    flags = dataset["flag"].to_numpy()
+    features = np.column_stack((ids, payloads, flags))
     # print(features)
     return pd.DataFrame(features)
 
@@ -30,10 +37,6 @@ def _split_and_fill(s):
 
 
 if __name__ == "__main__":
-    mod_path = Path(__file__).parent
-    relative_path = "../data/raw.csv"
-    data_path = (mod_path / relative_path).resolve()
-    colnames = ["time", "can", "id", "dlc", "payload"]
-    dataset = pd.read_csv(data_path, names=colnames, header=None, nrows=100)
-
+    dataset = dataset_loader.get_dataset()
     features = get_features(dataset)
+    print(dataset[:10])

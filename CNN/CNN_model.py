@@ -13,7 +13,7 @@ def compute_output_shape(input, kernel, padding=0, stride=1, convolutional=True)
 
 
 class Binary_CNN(nn.Module):
-    def __init__(self, input_dim=10, in_channels=1, output_dim=1, kernel=2):
+    def __init__(self, input_dim=9, in_channels=1, output_dim=1, kernel=2):
         super().__init__()
         conv_channels=512
         output_conv1 = compute_output_shape(input_dim, kernel)
