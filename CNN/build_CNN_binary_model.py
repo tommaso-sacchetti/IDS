@@ -8,6 +8,7 @@ import pre_processing
 import numpy as np
 import torch.nn as nn
 import torch.optim as optim
+import global_variables as glob
 from train import train_model
 from sklearn.model_selection import train_test_split
 
@@ -110,7 +111,10 @@ class EarlyStopping:
 ####                   PRE-PROCESSING                   ####
 ############################################################
 
-dataset = dataset_loader.get_dataset()
+dataset = dataset_loader.get_single_dataset(glob.attack_data_path)
+
+# train_dataset = get_full_dataset(train = True)
+# test_dataset = get_full_dataset(train = False)
 
 #############
 # TO REMOVE #
