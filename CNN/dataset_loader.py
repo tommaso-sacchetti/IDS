@@ -1,6 +1,10 @@
+import pre_processing
 import torch
 import pandas as pd
 import global_variables as glob
+import numpy as np
+import torch.nn.functional as F
+from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -54,25 +58,42 @@ def get_full_multiclass_dataset(train=True):
     for index, file in enumerate(files):
         attack_name = glob.attack_classes[index + 1]
         no_attack = glob.attack_classes[0]
-        print(no_attack, attack_name)
         df = get_single_dataset(file)
         mapping = {0: no_attack, 1: attack_name}
         df["flag"] = df["flag"].replace(mapping)
         dataset = pd.concat([dataset, df], ignore_index=True)
     return dataset
 
+def TEST_DATASET():
+    dataset = get_single_dataset(glob.attack_data_path)
+    print(dataset.sample(n=5))
+    features = pre_processing.get_features(dataset)
+    mapping = {0: 'no_attack', 1: 'attack_name'}
+    #dataset["flag"] = dataset["flag"].replace(mapping)
+    features.iloc[:, -1] = features.iloc[:, -1].replace(mapping) 
+    return CAN_Dataset(features)
 
 class CAN_Dataset(Dataset):
     # flag: T: injected message, R: normal message
     def __init__(self, dataset: pd.DataFrame):
         x = dataset.iloc[:, 0:-1]
+        print(x[:10])
         y = dataset.iloc[:, -1]
         x = x.to_numpy()
         y = y.to_numpy()
 
         self.x_train = torch.tensor(x, dtype=torch.float32).unsqueeze(0)
+        #self.y_train = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
         # unsqueeze(1) to change the shape in [batch_size, 1] (for training)
+        #y = torch.tensor(y, dtype=torch.float32)#.unsqueeze(1)
+        y = y.reshape(-1, 1)
+        print(y)
+        ohe = OneHotEncoder(sparse_output=False).fit(y)
+        print('\n', ohe.categories_) 
+        y = ohe.transform(y)
+        print(y)
         self.y_train = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
+
 
     def __len__(self):
         return len(self.y_train)
@@ -82,11 +103,7 @@ class CAN_Dataset(Dataset):
 
 
 if __name__ == "__main__":
-    df = get_full_multiclass_dataset(glob.attack_data_path)
-    mapping = {0: "no attack", 1: "attack"}
-    df["flag"] = df["flag"].replace(mapping)
-    print(df.sample(n=50))
-
+    TEST_DATASET()
     """
     if glob.LIMITED_RESOURCES: 
         dataset = get_single_dataset(file=glob.attack_data_path)

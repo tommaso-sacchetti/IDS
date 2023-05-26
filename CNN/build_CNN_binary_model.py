@@ -113,8 +113,8 @@ class EarlyStopping:
 
 dataset = dataset_loader.get_single_dataset(glob.attack_data_path)
 
-# train_dataset = get_full_dataset(train = True)
-# test_dataset = get_full_dataset(train = False)
+# dataset = get_full_binary_dataset(train = True)
+# test_dataset = get_full_binary_dataset(train = False)
 
 #############
 # TO REMOVE #
