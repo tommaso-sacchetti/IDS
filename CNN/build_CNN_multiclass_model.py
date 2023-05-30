@@ -61,7 +61,7 @@ if not os.path.exists(model_dir):
     os.makedirs(model_dir)
 
 input_dim = 9
-output_dim = 1
+output_dim = 7
 batch_size = 256
 epochs = 200
 early_stopping_patience = 5
@@ -71,6 +71,7 @@ dropout = 0.1
 
 # Early stopping: credits to Massaro
 # TODO: check if possible the copy otherwise re-implement it
+
 
 class EarlyStopping:
     """
@@ -110,34 +111,37 @@ class EarlyStopping:
 ####                   PRE-PROCESSING                   ####
 ############################################################
 
-dataset = dataset_loader.get_dataset()
+dataset_list = dataset_loader.get_full_multiclass_dataset()
 
-#############
-# TO REMOVE #
-#############
-dataset = dataset.drop(dataset.index[1000:])
+# dataset = get_full_multiclass_dataset(train = True)
+# test_dataset = get_full_multiclass_dataset(train = False)
+
 
 # Split train, validation and test
 train_size = 0.8
 val_size = 0.2
-features = pre_processing.get_features(dataset)
+features = pre_processing.get_multiclass_features(dataset_list)
 train, val = train_test_split(features, test_size=val_size)
 print(f"Training dataset length: {len(train)}")
 print(f"Validation dataset length: {len(val)}")
 
-train_loader = dataset_loader.get_data_loader(train, batch_size=batch_size)
-val_loader = dataset_loader.get_data_loader(val, batch_size=batch_size)
+train_loader = dataset_loader.get_data_loader(
+    is_binary=False, dataset=train, batch_size=batch_size
+)
+val_loader = dataset_loader.get_data_loader(
+    is_binary=False, dataset=val, batch_size=batch_size
+)
 
 
 ############################################################
 ####               BUILD AND TRAIN MODEL                ####
 ############################################################
 
-model = CNN_model.Binary_CNN(input_dim)
+model = CNN_model.Multiclass_CNN(input_dim, output_dim=output_dim)
 model = model.to(device)
 model.eval()
-loss_fn = nn.BCELoss()
-optimizer = optim.Adam(model.parameters(), lr=lr)
+loss_fn = nn.CrossEntropyLoss()
+optimizer = optim.NAdam(model.parameters(), lr=lr)
 early_stopping = EarlyStopping(
     patience=early_stopping_patience, min_delta=early_stopping_min_delta
 )
@@ -157,7 +161,7 @@ try:
         epochs,
         train_loader,
         val_loader,
-        device
+        device,
     )
 
     print("Saving model...")

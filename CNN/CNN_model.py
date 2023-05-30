@@ -32,17 +32,18 @@ class Binary_CNN(nn.Module):
         x = self.dropout(x)
         x = self.maxpool(x)
         x = self.flatten(x)
+        print(x.shape)
         x = F.sigmoid(self.fc1(x))
         return x
 
 
 class Multiclass_CNN(nn.Module):
-    def __init__(self, input_dim=10, in_channels=1, output_dim=5, kernel=2):
+    def __init__(self, input_dim=9, in_channels=1, output_dim=7, kernel=2):
         super().__init__()
         conv_channels=512
         output_conv1 = compute_output_shape(input_dim, kernel)
-        # output_conv2 = compute_output_shape(output_conv1, kernel)
-        output_maxpool = compute_output_shape(output_conv1, kernel, stride=kernel)
+        output_conv2 = compute_output_shape(output_conv1, kernel)
+        output_maxpool = compute_output_shape(output_conv2, kernel, stride=kernel)
         input_fc1 = output_maxpool * conv_channels
         self.conv1 = nn.Conv1d(in_channels, conv_channels, kernel_size=kernel)
         self.conv2 = nn.Conv1d(conv_channels, conv_channels, kernel_size=kernel)
@@ -50,7 +51,6 @@ class Multiclass_CNN(nn.Module):
         self.maxpool = nn.MaxPool1d(kernel_size=kernel)
         self.flatten = nn.Flatten()
         self.fc1 = nn.Linear(input_fc1, output_dim)
-        self.softmax = nn.Softmax()
 
     def forward(self, x):
         x = F.sigmoid(self.conv1(x))
@@ -58,7 +58,7 @@ class Multiclass_CNN(nn.Module):
         x = self.dropout(x)
         x = self.maxpool(x)
         x = self.flatten(x)
-        x = F.sigmoid(self.fc1(x))
+        x = F.softmax(self.fc1(x))
         return x
 
 

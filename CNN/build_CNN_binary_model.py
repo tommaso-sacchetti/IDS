@@ -116,21 +116,16 @@ dataset = dataset_loader.get_single_dataset(glob.attack_data_path)
 # dataset = get_full_binary_dataset(train = True)
 # test_dataset = get_full_binary_dataset(train = False)
 
-#############
-# TO REMOVE #
-#############
-dataset = dataset.drop(dataset.index[1000:])
-
 # Split train, validation and test
 train_size = 0.8
 val_size = 0.2
-features = pre_processing.get_features(dataset)
+features = pre_processing.get_binary_features(dataset)
 train, val = train_test_split(features, test_size=val_size)
 print(f"Training dataset length: {len(train)}")
 print(f"Validation dataset length: {len(val)}")
 
-train_loader = dataset_loader.get_data_loader(train, batch_size=batch_size)
-val_loader = dataset_loader.get_data_loader(val, batch_size=batch_size)
+train_loader = dataset_loader.get_data_loader(is_binary=True, dataset=train, batch_size=batch_size)
+val_loader = dataset_loader.get_data_loader(is_binary=True, dataset=val, batch_size=batch_size)
 
 
 ############################################################
