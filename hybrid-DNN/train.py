@@ -73,8 +73,8 @@ def train_model(
 
         # Display metrics at the end of each epoch
         print(
-            f"""Epoch: {epoch} \tTraining Loss: {train_loss} \t
-                Validation Loss: {val_loss} \tTime taken: {round(time.time() - start_time, 3)}s"""  # noqa: E501
+            f"""Epoch: {epoch} \tTraining Loss: {round(train_loss,5)} \t
+                Validation Loss: {round(val_loss,5)} \tTime taken: {round(time.time() - start_time, 3)}s"""  # noqa: E501
         )
 
         # Early stopping

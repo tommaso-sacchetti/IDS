@@ -111,8 +111,7 @@ class CAN_Multiclass_Dataset(Dataset):
         y = ohe.fit_transform(pd.DataFrame(y))
 
         self.x_train = torch.tensor(x, dtype=torch.float32).unsqueeze(0)
-        # unsqueeze(1) to change the shape in [batch_size, 1] (for training)
-        self.y_train = torch.tensor(y.toarray(), dtype=torch.float32).unsqueeze(1)
+        self.y_train = torch.tensor(y.toarray(), dtype=torch.float32)#.unsqueeze(1)
 
     def __len__(self):
         return len(self.y_train)

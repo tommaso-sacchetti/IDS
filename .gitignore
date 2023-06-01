@@ -1,6 +1,7 @@
 data/
 env/
 .vscode/
+.git-old/
 hybrid-DNN/rule-based/periods.npy
 hybrid-DNN/rule-based/whitelist.txt
 hybrid-DNN/rules

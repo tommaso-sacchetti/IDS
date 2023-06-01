@@ -22,6 +22,3 @@ class DNN(nn.Module):
         x = F.sigmoid(self.out(x))
         return x
 
-
-net = DNN()
-print(net)

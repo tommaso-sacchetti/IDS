@@ -138,6 +138,9 @@ val_loader = dataset_loader.get_data_loader(
 ############################################################
 
 model = CNN_model.Multiclass_CNN(input_dim, output_dim=output_dim)
+print("\nMODEL SUMMARY")
+print("-------------")
+print(model, '\n')
 model = model.to(device)
 model.eval()
 loss_fn = nn.CrossEntropyLoss()
@@ -148,8 +151,7 @@ early_stopping = EarlyStopping(
 
 print("############################################################")
 print("####                 TRAINING THE MODEL                 ####")
-print("############################################################")
-
+print("############################################################\n")
 # Training loop
 
 try:
