@@ -1,8 +1,22 @@
 * intervalli di tempo (rule-based) e messaggi periodici, falsi positivi e come fare. In molti casi scarta molti pacchetti.
-* come funzionano i dataset
+    controlla manualmente i pacchetti plottandoli, cerca quanti sono gli outlier e prova a capire l'intervallo di confidenza migliore
+
+* come funzionano i dataset (split train validation oppure altro dataset di validation)
+    crea il dataset personalizzato con il tool per aggiungere attacchi su traccia can
+
 * differenza di lunghezza nei bytes of importance e come calcolarlo
+    leggi il paper linkato quando parla degli importance bytes
+
 * calcolare entropia e distanza di hamming in modo più ottimizzato (oppure è normale ci metta un secolo)
-* in quale modo si caricano i dati su numpy
-* rete convoluzionale pacchetti con pochi byte come rappresentarli (-1 dove non c'è byte)
-* colonna flag come comporla/crearla
-* come salvare i file delle feature e delle regole per Hybrid dnn
+    non dovrebbero essere lenti come procedimenti, controlla se è il computer o se è calcolato in maniera inefficiente
+
+* come salvare i file delle feature e delle regole per Hybrid dnn (se salvarli)
+    non c'è bisogno di salvarli, essendo rapidi da calcolare il modo migliore è calcolarli ogni volta
+
+* come poter fare training in remoto
+    provare ad importare i file su google colab
+
+----------------------------------------------------------------------------------------------------------------------------------   
+* fonti su come fare evaluation
+* posso utilizzare il codice di altri tesisti?
+

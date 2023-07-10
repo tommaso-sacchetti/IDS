@@ -41,6 +41,8 @@ def get_multiclass_features(dataset_list: list()) -> pd.DataFrame:
     """
     features = pd.DataFrame()
 
+    print("\nFEATURE PREPROCESSING")
+    print("---------------------\n")
     for index, dataset in (pbar := tqdm(enumerate(dataset_list))):
         pbar.set_description("extracting features from dataset")
         ids = dataset["id"].to_numpy()

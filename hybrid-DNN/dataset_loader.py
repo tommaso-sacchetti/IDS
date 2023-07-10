@@ -12,7 +12,7 @@ def get_data_loader(dataset: pd.DataFrame, batch_size: int) -> DataLoader:
 
 
 def get_dataset() -> pd.DataFrame:
-    # TODO: put the dataset file name in a place easy to change 
+    # TODO: put the dataset file name in a place easy to change
     """
     Get the dataset according to the dataset name stored in this file
     """
@@ -23,7 +23,7 @@ def get_dataset() -> pd.DataFrame:
 
 
 def get_test_dataset() -> pd.DataFrame:
-    # TODO: put the dataset file name in a place easy to change 
+    # TODO: put the dataset file name in a place easy to change
     """
     Get the test dataset according to the dataset name stored in this file
     """

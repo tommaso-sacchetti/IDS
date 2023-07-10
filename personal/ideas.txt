@@ -1,2 +1,2 @@
 * try CNN both with max and avg pooling
-* splittare direttamente il dataset o usare test e validation?
+* splittare direttamente il dataset o usare test e validation? (devo dividere il dataset in train test e validation o ci saranno altri dati su cui fare validation?)

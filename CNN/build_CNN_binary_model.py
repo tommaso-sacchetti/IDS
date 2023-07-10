@@ -73,6 +73,7 @@ dropout = 0.1
 # Early stopping: credits to Massaro
 # TODO: check if possible the copy otherwise re-implement it
 
+
 class EarlyStopping:
     """
     Early stopping to stop the training when the loss does not improve after
@@ -93,7 +94,7 @@ class EarlyStopping:
         self.early_stop = False
 
     def __call__(self, val_loss):
-        if self.best_loss is None:
+        if  self.best_loss is None:
             self.best_loss = val_loss
         elif self.best_loss - val_loss > self.min_delta:
             self.best_loss = val_loss
@@ -124,8 +125,12 @@ train, val = train_test_split(features, test_size=val_size)
 print(f"Training dataset length: {len(train)}")
 print(f"Validation dataset length: {len(val)}")
 
-train_loader = dataset_loader.get_data_loader(is_binary=True, dataset=train, batch_size=batch_size)
-val_loader = dataset_loader.get_data_loader(is_binary=True, dataset=val, batch_size=batch_size)
+train_loader = dataset_loader.get_data_loader(
+    is_binary=True, dataset=train, batch_size=batch_size
+)
+val_loader = dataset_loader.get_data_loader(
+    is_binary=True, dataset=val, batch_size=batch_size
+)
 
 
 ############################################################
@@ -133,6 +138,9 @@ val_loader = dataset_loader.get_data_loader(is_binary=True, dataset=val, batch_s
 ############################################################
 
 model = CNN_model.Binary_CNN(input_dim)
+print("\nMODEL SUMMARY")
+print("-------------")
+print(model, "\n")
 model = model.to(device)
 model.eval()
 loss_fn = nn.BCELoss()
@@ -143,7 +151,7 @@ early_stopping = EarlyStopping(
 
 print("############################################################")
 print("####                 TRAINING THE MODEL                 ####")
-print("############################################################")
+print("############################################################\n")
 
 # Training loop
 
@@ -156,7 +164,7 @@ try:
         epochs,
         train_loader,
         val_loader,
-        device
+        device,
     )
 
     print("Saving model...")

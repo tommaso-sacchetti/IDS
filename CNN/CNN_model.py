@@ -15,7 +15,7 @@ def compute_output_shape(input, kernel, padding=0, stride=1, convolutional=True)
 class Binary_CNN(nn.Module):
     def __init__(self, input_dim=9, in_channels=1, output_dim=1, kernel=2):
         super().__init__()
-        conv_channels=512
+        conv_channels = 512
         output_conv1 = compute_output_shape(input_dim, kernel)
         output_maxpool = compute_output_shape(output_conv1, kernel, stride=kernel)
         input_fc1 = output_maxpool * conv_channels
@@ -32,7 +32,6 @@ class Binary_CNN(nn.Module):
         x = self.dropout(x)
         x = self.maxpool(x)
         x = self.flatten(x)
-        print(x.shape)
         x = F.sigmoid(self.fc1(x))
         return x
 
@@ -40,7 +39,7 @@ class Binary_CNN(nn.Module):
 class Multiclass_CNN(nn.Module):
     def __init__(self, input_dim=9, in_channels=1, output_dim=7, kernel=2):
         super().__init__()
-        conv_channels=512
+        conv_channels = 512
         output_conv1 = compute_output_shape(input_dim, kernel)
         output_conv2 = compute_output_shape(output_conv1, kernel)
         output_maxpool = compute_output_shape(output_conv2, kernel, stride=kernel)
@@ -58,7 +57,8 @@ class Multiclass_CNN(nn.Module):
         x = self.dropout(x)
         x = self.maxpool(x)
         x = self.flatten(x)
-        x = F.softmax(self.fc1(x))
+        # TODO: check if -1 is the correct dimension along which the softmax is done
+        x = F.softmax(self.fc1(x), dim=-1)
         return x
 
 

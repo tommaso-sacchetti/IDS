@@ -157,6 +157,9 @@ val_loader = dataset_loader.get_data_loader(val, batch_size=batch_size)
 ############################################################
 
 model = DNN_model.DNN(input_dim)
+print("\nMODEL SUMMARY")
+print("-------------")
+print(model, '\n')
 model = model.to(device)
 model.eval()
 loss_fn = nn.BCELoss()
@@ -167,7 +170,7 @@ early_stopping = EarlyStopping(
 
 print("############################################################")
 print("####                 TRAINING THE MODEL                 ####")
-print("############################################################")
+print("############################################################\n")
 
 # Training loop
 
